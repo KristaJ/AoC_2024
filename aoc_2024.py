@@ -63,7 +63,9 @@ class day3:
     def __init__(self, filename):
         self.data = aa.read_file(filename)
         self.matches = self.parse_input()
-        self.parse_matches()
+        self.matches2 = self.parse_input_part2()
+        self.total1 = self.parse_matches()
+        self.total2 = self.parse_matches_part2()
 
     def parse_input(self):
         reg_ex = r'mul\([0-9]{1,3},[0-9]{1,3}\)'
@@ -77,14 +79,31 @@ class day3:
         for match in self.matches:
             nums = match.split("(")[1].split(")")[0].split(",")
             total = total + (int(nums[0]) * int(nums[1]))
-        print(total)
+        return total
 
     def parse_input_part2(self):
-        reg_ex = r'mul\([0-9]{1,3},[0-9]{1,3}\)'
+        reg_ex1 = r'mul\([0-9]{1,3},[0-9]{1,3}\)'
+        reg_ex2 = r'do\(\)'
+        reg_ex3 = r'don\'t\(\)'
+        all_reg_ex = '|'.join(f'(?:{x})' for x in ([reg_ex1, reg_ex2, reg_ex3]))
         matches = []
         for l in self.data:
-            matches.extend(re.findall(reg_ex, l))
+            matches.extend(re.findall(all_reg_ex, l))
         return matches
+
+    def parse_matches_part2(self):
+        total = 0
+        do_mult = True
+        for match in self.matches2:
+            if (match == 'don\'t()') & (do_mult):
+                do_mult = False
+            elif (match == 'do()') & (not do_mult):
+                do_mult = True
+            elif match.startswith('mul'):
+                if do_mult:
+                    nums = match.split("(")[1].split(")")[0].split(",")
+                    total = total + (int(nums[0]) * int(nums[1]))
+        return total
 
 
 # print(f"day 1, part 1:  {day1_a('./data/day1_2024.txt')}")
@@ -92,3 +111,6 @@ class day3:
 # print(f"day 2, part 1:  {day2_a('./data/day2_2024.txt')}")
 # print(f"day 2, part 2:  {day2_b('./data/day2_2024.txt')}")
 d3 = day3('./data/day3_2024.txt')
+print(f"day 2, part 1:  {d3.total1}")
+print(f"day 2, part 2:  {d3.total2}")
+
