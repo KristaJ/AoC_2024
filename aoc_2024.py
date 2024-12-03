@@ -1,6 +1,5 @@
 from Assets import AoCAssets as aa
 from collections import Counter
-import numpy as np
 
 def day1_a(filename):
     data = aa.read_file(filename)
@@ -27,12 +26,8 @@ def day2_a(filename):
     for d in data:
         x = d.split()
         x = [int(z) for z in x]
-        is_mono = monotonic(x)
-        is_inRange = inRange(x)
-        if  is_mono and is_inRange:
+        if monotonic(x) and inRange(x):
             safe = safe +1
-        else:
-            remove_outlier(x)
     return safe
 
 def day2_b(filename):
@@ -41,21 +36,28 @@ def day2_b(filename):
     for d in data:
         x = d.split()
         x = [int(z) for z in x]
-        is_mono = monotonic(x)
-        is_inRange = inRange(x)
-        if is_mono and is_inRange:
+        if monotonic(x) and inRange(x):
             safe = safe + 1
         else:
             for i in range(len(x)):
                 x_temp = x[:i] + x[i+1:]
-                is_mono = monotonic(x_temp)
-                is_inRange = inRange(x_temp)
-                if is_mono and is_inRange:
+                if monotonic(x_temp) and inRange(x_temp):
                     safe = safe + 1
                     break
     return safe
 
-
+def inRange(x):
+    diffs = [int(x[i - 1]) - int(x[i]) for i in range(1, len(x))]
+    if any([abs(x) < 1 for x in diffs]) or any([abs(x) > 3 for x in diffs]):
+        return False
+    else:
+        return True
+def monotonic(x, damp = False):
+    diffs = [int(x[i - 1]) - int(x[i]) for i in range(1, len(x))]
+    if not(all([x<0 for x in diffs]) or all([x>0 for x in diffs])):
+        return False
+    else:
+        return True
 
 
 
