@@ -1,5 +1,6 @@
 from Assets import AoCAssets as aa
 from collections import Counter
+import re
 
 def day1_a(filename):
     data = aa.read_file(filename)
@@ -9,7 +10,6 @@ def day1_a(filename):
     row2 = sorted(row2)
     diff = [abs(r1-r2) for r1,r2 in zip(row1, row2)]
     return sum(diff)
-
 
 def day1_b(filename):
     total = 0
@@ -59,9 +59,36 @@ def monotonic(x, damp = False):
     else:
         return True
 
+class day3:
+    def __init__(self, filename):
+        self.data = aa.read_file(filename)
+        self.matches = self.parse_input()
+        self.parse_matches()
+
+    def parse_input(self):
+        reg_ex = r'mul\([0-9]{1,3},[0-9]{1,3}\)'
+        matches = []
+        for l in self.data:
+            matches.extend(re.findall(reg_ex, l))
+        return matches
+
+    def parse_matches(self):
+        total = 0
+        for match in self.matches:
+            nums = match.split("(")[1].split(")")[0].split(",")
+            total = total + (int(nums[0]) * int(nums[1]))
+        print(total)
+
+    def parse_input_part2(self):
+        reg_ex = r'mul\([0-9]{1,3},[0-9]{1,3}\)'
+        matches = []
+        for l in self.data:
+            matches.extend(re.findall(reg_ex, l))
+        return matches
 
 
-print(f"day 1, part 1:  {day1_a('./data/day1_2024.txt')}")
-print(f"day 1, part 2:  {day1_b('./data/day1_2024.txt')}")
-print(f"day 2, part 1:  {day2_a('./data/day2_2024.txt')}")
-print(f"day 2, part 2:  {day2_b('./data/day2_2024.txt')}")
+# print(f"day 1, part 1:  {day1_a('./data/day1_2024.txt')}")
+# print(f"day 1, part 2:  {day1_b('./data/day1_2024.txt')}")
+# print(f"day 2, part 1:  {day2_a('./data/day2_2024.txt')}")
+# print(f"day 2, part 2:  {day2_b('./data/day2_2024.txt')}")
+d3 = day3('./data/day3_2024.txt')
