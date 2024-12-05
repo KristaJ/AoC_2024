@@ -2,6 +2,9 @@ from Assets import AoCAssets as aa
 from collections import Counter
 import re
 import numpy as np
+from collections import defaultdict
+import math
+
 
 def day1_a(filename):
     data = aa.read_file(filename)
@@ -245,16 +248,66 @@ class day4:
         combos.extend([x for x in SAM_decending_A_coord if x in MAS_ascending_A_coord])
         return len(combos)
 
-
-# print(f"day 1, part 1:  {day1_a('./data/day1_2024.txt')}")
-# print(f"day 1, part 2:  {day1_b('./data/day1_2024.txt')}")
-# print(f"day 2, part 1:  {day2_a('./data/day2_2024.txt')}")
-# print(f"day 2, part 2:  {day2_b('./data/day2_2024.txt')}")
-# d3 = day3('./data/day3_2024.txt')
-# print(f"day 3, part 1:  {d3.total1}")
-# print(f"day 3, part 2:  {d3.total2}")
-d4 = day4('./data/day4_2024.txt')
-print(f"day 4, part 1:  {d4.matches1}")
-print(f"day 4, part 2:  {d4.matches2}")
+class day5:
+    def __init__(self, filename):
+        self.data = aa.read_file(filename)
+        self.instructions, self.pages = self.divide_data()
+        self.page_order = self.parse_instructions()
+        self.solution1, self.incorrect = self.parse_page(self.pages)
+        self.corrected = self.fix_incorrect()
+        self.solution2, self.still_incorrect = self.parse_page(self.corrected)
 
 
+    def divide_data(self):
+        blank_line = self.data.index('')
+        instructions = self.data[:blank_line]
+        pages = self.data[blank_line+1:]
+        return instructions, pages
+
+    def parse_instructions(self):
+        page_order = defaultdict(dict)
+        for i in self.instructions:
+            [num1, num2] = i.split("|")
+            num1_after = page_order.get(num1, {}).get('after', [])
+            num2_before = page_order.get(num2, {}).get('before', [])
+            num1_after.append(num2)
+            num2_before.append(num1)
+            page_order[num1]['after'] = num1_after
+            page_order[num2]['before'] = num2_before
+        return page_order
+
+    def parse_page(self, input_data):
+        incorrect_orders = []
+        middle_total = 0
+        for pages in input_data:
+            nums = pages.split(",")
+            for num in nums:
+                before_nums = nums[:nums.index(num)]
+                after_nums = nums[nums.index(num)+1:]
+                # make sure that none of the before nums are supposed to be after and visa-versa
+                wrong_place = [x for x in before_nums if x in self.page_order.get(num).get('after', [])]
+                wrong_place.extend([x for x in after_nums if x in self.page_order.get(num).get('before', [])])
+                if len(wrong_place)>0:
+                    incorrect_orders.append(nums)
+                    break
+            if len(wrong_place) == 0:
+                assert len(nums)%2 == 1
+                middle_total = middle_total + int(nums[math.floor(len(nums)/2)])
+        return middle_total, incorrect_orders
+
+    def fix_incorrect(self):
+        corrected = []
+        for item in self.incorrect:
+            new_order = item.copy()
+            for num in item:
+                new_order = [x for x in new_order if x in self.page_order[num].get('before', [])] \
+                            + [num] \
+                                + [x for x in new_order if x in self.page_order[num].get('after', [])]
+            corrected.append(",".join(new_order))
+        return corrected
+
+
+
+d5 = day5('./data/day5_2024.txt')
+print(f"day 5, part 1:  {d5.solution1}")
+print(f"day 5, part 1:  {d5.solution2}")
