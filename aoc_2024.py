@@ -306,8 +306,90 @@ class day5:
             corrected.append(",".join(new_order))
         return corrected
 
+class day6:
+    def __init__(self, filename):
+        self.data = aa.read_file(filename)
+        self.data = self.data_to_matrix()
+        self.marked_data = self.data.copy()
+        self.start_point, self.starting_direction =self.find_starting_point()
+        self.obstacles = self.find_obstacle()
+        self.current_location, self.current_direction = self.start_point, self.starting_direction
+        self.solution1 = self.move()
+
+    def data_to_matrix(self):
+        '''
+        transform the data into a matrix for easier traversal
+        '''
+        data = [[x for x in data_line] for data_line in self.data]
+        matrix = np.array(data)
+        return matrix
+
+    def find_starting_point(self):
+        '''
+        Find the starting point and the starting direction
+        :return:
+        '''
+        for char in ['^', '<', '>', 'v']:
+            if np.where(self.data == char)[0].size > 0:
+                return((np.where(self.data == char)[0].tolist()[0],
+                        np.where(self.data == char)[1].tolist()[0]), char)
+
+    def find_obstacle(self):
+        '''
+        create a list of th coordinates of all obstacles
+        :return:
+        '''
+        return(list(zip(np.where(self.data == "#")[0].tolist(),
+                        np.where(self.data == "#")[1].tolist())))
+
+    def move_up(self):
+        return [(self.current_location[0]-i,
+                 self.current_location[1]) for i in range(self.current_location[0]+1)]
+
+    def move_down(self):
+        return [(self.current_location[0]+i,
+                 self.current_location[1]) for i in range((self.data.shape[0]-1) - self.current_location[0]+1)]
+
+    def move_right(self):
+        return [(self.current_location[0],
+                 self.current_location[1]+i) for i in range((self.data.shape[1]-1) - self.current_location[1]+1)]
+
+    def move_left(self):
+        return [(self.current_location[0],
+                 self.current_location[1]-i) for i in range(self.current_location[1]+1)]
+
+    def move(self):
+        on_map = True
+        new_direction_map = {'^': '>',
+                             '>': 'v',
+                             'v': '<',
+                             '<': '^'}
+        coords_traversed = []
+        while on_map:
+            if self.current_direction == "^":
+                path = self.move_up()
+            elif self.current_direction == ">":
+                path = self.move_right()
+            elif self.current_direction == "<":
+                path = self.move_left()
+            elif self.current_direction == "v":
+                path = self.move_down()
+            stop = [x for x in path if x in self.obstacles]
+            try:
+                coords_traversed.extend(path[: path.index(stop[0])-1])
+            except IndexError:
+                pass
+            if len(stop) == 0:
+                coords_traversed.extend(path)
+                on_map = False
+            else:
+                self.current_location = path[path.index(stop[0])-1]
+                self.current_direction = new_direction_map[self.current_direction]
+
+        return len(set(coords_traversed))
 
 
-d5 = day5('./data/day5_2024.txt')
-print(f"day 5, part 1:  {d5.solution1}")
-print(f"day 5, part 1:  {d5.solution2}")
+
+d6 = day6('./data/day6_2024.txt')
+print(f"day 6, part 1:  {d6.solution1}")
+# print(f"day 5, part 1:  {d5.solution2}")
