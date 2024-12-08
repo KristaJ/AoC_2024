@@ -6,63 +6,74 @@ from collections import defaultdict
 import math
 
 
-def day1_a(filename):
-    data = aa.read_file(filename)
-    row1 = [int(x.split('  ')[0]) for x in data]
-    row2 = [int(x.split('  ')[1]) for x in data]
-    row1 = sorted(row1)
-    row2 = sorted(row2)
-    diff = [abs(r1-r2) for r1,r2 in zip(row1, row2)]
-    return sum(diff)
+class day1:
 
-def day1_b(filename):
-    total = 0
-    data = aa.read_file(filename)
-    left_row = Counter([int(x.split('  ')[0]) for x in data])
-    right_row = Counter([int(x.split('  ')[1]) for x in data])
-    for k, v in left_row.items():
-        total = (right_row.get(k, 0) * k * v) + total
-    return total
+    def __init__(self, filename):
+        self.data = aa.read_file(filename)
+        self.solution1 = self.day1_a
+        self.solution2 = self.day1_b
 
-def day2_a(filename):
-    safe = 0
-    data = aa.read_file(filename)
-    for d in data:
-        x = d.split()
-        x = [int(z) for z in x]
-        if monotonic(x) and inRange(x):
-            safe = safe +1
-    return safe
+    def day1_a(self):
+        data = aa.read_file(filename)
+        row1 = [int(x.split('  ')[0]) for x in self.data]
+        row2 = [int(x.split('  ')[1]) for x in self.data]
+        row1 = sorted(row1)
+        row2 = sorted(row2)
+        diff = [abs(r1-r2) for r1,r2 in zip(row1, row2)]
+        return sum(diff)
 
-def day2_b(filename):
-    safe = 0
-    data = aa.read_file(filename)
-    for d in data:
-        x = d.split()
-        x = [int(z) for z in x]
-        if monotonic(x) and inRange(x):
-            safe = safe + 1
+    def day1_b(self):
+        total = 0
+        left_row = Counter([int(x.split('  ')[0]) for x in self.data])
+        right_row = Counter([int(x.split('  ')[1]) for x in self.data])
+        for k, v in left_row.items():
+            total = (right_row.get(k, 0) * k * v) + total
+        return total
+
+class day2:
+    def __init__(self, filename):
+        self.data = aa.read_file(filename)
+        self.solution1 = self.day2_a()
+        self.solution2 = self.day2_b()
+    
+    def day2_a(self):
+        safe = 0
+        for d in self.data:
+            x = d.split()
+            x = [int(z) for z in x]
+            if self.monotonic(x) and self.inRange(x):
+                safe = safe +1
+        return safe
+    
+    def day2_b(self):
+        safe = 0
+        for d in self.data:
+            x = d.split()
+            x = [int(z) for z in x]
+            if self.monotonic(x) and self.inRange(x):
+                safe = safe + 1
+            else:
+                for i in range(len(x)):
+                    x_temp = x[:i] + x[i+1:]
+                    if self.monotonic(x_temp) and self.inRange(x_temp):
+                        safe = safe + 1
+                        break
+        return safe
+    
+    def inRange(self, x):
+        diffs = [int(x[i - 1]) - int(x[i]) for i in range(1, len(x))]
+        if any([abs(x) < 1 for x in diffs]) or any([abs(x) > 3 for x in diffs]):
+            return False
         else:
-            for i in range(len(x)):
-                x_temp = x[:i] + x[i+1:]
-                if monotonic(x_temp) and inRange(x_temp):
-                    safe = safe + 1
-                    break
-    return safe
-
-def inRange(x):
-    diffs = [int(x[i - 1]) - int(x[i]) for i in range(1, len(x))]
-    if any([abs(x) < 1 for x in diffs]) or any([abs(x) > 3 for x in diffs]):
-        return False
-    else:
-        return True
-def monotonic(x, damp = False):
-    diffs = [int(x[i - 1]) - int(x[i]) for i in range(1, len(x))]
-    if not(all([x<0 for x in diffs]) or all([x>0 for x in diffs])):
-        return False
-    else:
-        return True
-
+            return True
+    
+    def monotonic(self, x):
+        diffs = [int(x[i - 1]) - int(x[i]) for i in range(1, len(x))]
+        if not(all([x<0 for x in diffs]) or all([x>0 for x in diffs])):
+            return False
+        else:
+            return True
+          
 class day3:
     def __init__(self, filename):
         self.data = aa.read_file(filename)
@@ -319,7 +330,6 @@ class day6:
         self.potential_obstacles = []
         self.part2()
         self.solution2 = len(list(set(self.potential_obstacles)))
-        # print(self.potential_obstacles)
 
     def data_to_matrix(self):
         '''
