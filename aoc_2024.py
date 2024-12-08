@@ -310,11 +310,16 @@ class day6:
     def __init__(self, filename):
         self.data = aa.read_file(filename)
         self.data = self.data_to_matrix()
-        self.marked_data = self.data.copy()
         self.start_point, self.starting_direction =self.find_starting_point()
         self.obstacles = self.find_obstacle()
         self.current_location, self.current_direction = self.start_point, self.starting_direction
-        self.solution1 = self.move()
+        self.new_direction_map = self.new_direction_map()
+        self.coords_traversed, self.movement_dir = self.move()
+        self.solution1 = len(list(set(self.coords_traversed)))
+        self.potential_obstacles = []
+        self.part2()
+        self.solution2 = len(list(set(self.potential_obstacles)))
+        # print(self.potential_obstacles)
 
     def data_to_matrix(self):
         '''
@@ -358,38 +363,120 @@ class day6:
         return [(self.current_location[0],
                  self.current_location[1]-i) for i in range(self.current_location[1]+1)]
 
+    def new_direction_map(self):
+        return  ({'^': '>',
+                 '>': 'v',
+                 'v': '<',
+                 '<': '^'})
+
     def move(self):
         on_map = True
-        new_direction_map = {'^': '>',
-                             '>': 'v',
-                             'v': '<',
-                             '<': '^'}
         coords_traversed = []
+        movement_dir = []
         while on_map:
             if self.current_direction == "^":
-                path = self.move_up()
+                potential_path = self.move_up()
             elif self.current_direction == ">":
-                path = self.move_right()
+                potential_path = self.move_right()
             elif self.current_direction == "<":
-                path = self.move_left()
+                potential_path = self.move_left()
             elif self.current_direction == "v":
-                path = self.move_down()
-            stop = [x for x in path if x in self.obstacles]
-            try:
-                coords_traversed.extend(path[: path.index(stop[0])-1])
-            except IndexError:
-                pass
-            if len(stop) == 0:
-                coords_traversed.extend(path)
-                on_map = False
+                potential_path = self.move_down()
+            stop = [x for x in potential_path if x in self.obstacles]
+            if len(stop)>0:
+                actual_path = potential_path[: potential_path.index(stop[0])]
+                coords_traversed.extend(actual_path)
+                movement_dir.extend([self.current_direction] * len(actual_path))
+                self.current_location = actual_path[-1]
+                self.current_direction = self.new_direction_map[self.current_direction]
             else:
-                self.current_location = path[path.index(stop[0])-1]
-                self.current_direction = new_direction_map[self.current_direction]
+                coords_traversed.extend(potential_path)
+                movement_dir.extend([self.current_direction] * len(potential_path))
+                on_map = False
 
-        return len(set(coords_traversed))
+        return coords_traversed, movement_dir
 
+    def get_path(self, location, direction):
+        if direction == "^":
+            path = [(location[0]-i,
+                     location[1]) for i in range(location[0]+1)]
+        elif direction == "v":
+            path = [(location[0]+i,
+                     location[1]) for i in range(self.data.shape[0] - location[0])]
+        elif direction == ">":
+            path = [(location[0], 
+                     location[1]+i) for i in range((self.data.shape[1]-location[1]))]
+        elif direction == "<":
+            path = [(location[0], 
+                     location[1]-i) for i in range(location[1]+1)]
+        return path
 
+    def output_matrix(self, final_path, temp_obstacles):
+        temp_matrix = self.data.copy()
+        temp_matrix[temp_obstacles[-1][0], temp_obstacles[-1][1]] = "O"
+        # print(final_path)
+        for x in final_path[1:]:
+            current_symbol = temp_matrix[x[0][0], x[0][1]]
+            if current_symbol == "#":
+                print("ERROR")
+            if temp_matrix[x[0][0], x[0][1]] == x[1]:
+                temp_matrix[x[0][0], x[0][1]] = "*"
+            elif current_symbol  == "*" or current_symbol  == "X":
+                temp_matrix[x[0][0], x[0][1]] = "X"
+                # print('repeat')
+            else:
+                temp_matrix[x[0][0], x[0][1]] = x[1]
+        np.savetxt(f'matrix_{temp_obstacles[-1]}.txt', temp_matrix, delimiter = '', fmt='%s')
+    
+    def move_from_test_location(self, test_location, test_direction, temp_obstacles):
+        on_map = True
+        final_path = []
+        turn_locations = []
+        # print("=======")
+        # print(test_location, test_direction)
+        while on_map:
+            potential_path = self.get_path(test_location, test_direction)
+            stop = [x for x in potential_path if x in temp_obstacles]
+            if len(stop) > 0:
+                actual_path = potential_path[: potential_path.index(stop[0])]
+                actual_path = [(x, test_direction) for x in actual_path]
+                final_path.extend(actual_path)
+                turn_locations.append((actual_path[-1], test_direction))
+                test_location = actual_path[-1][0]
+                test_direction = self.new_direction_map[test_direction]
+                try:
+                    turnIndex = turn_locations[:-1].index(turn_locations[-1])
+                except ValueError:
+                    pass
+                if turn_locations[-1] in turn_locations[:-1]:
+                    self.potential_obstacles.append(temp_obstacles[-1])  
+                    return 0
+            else:
+                # print("OUT")
+                on_map = False
+                
+    def part2(self):
+        self.loops = 0
+        # As the guard walks, is there anywhere she would run into a obsacle is she turned right?
+        locations = list(zip(self.coords_traversed, self.movement_dir))
+        ll = 0
+        # for each location and direction combo, see if there is a obstacle to the right
+        for loc, direction in locations:
+            #for each place the guard has been, if we place an obsticle in front of her will
+            # she enter a loop
+            ll = ll+1
+            if ll%500 == 0: 
+                print(ll)
+            if direction == '^':
+                new_obstacle = (loc[0]-1, loc[1])
+            if direction == 'v':
+                new_obstacle = (loc[0]+1, loc[1])
+            if direction == '>':
+                new_obstacle = (loc[0], loc[1]+1)
+            if direction == '<':
+                new_obstacle = (loc[0], loc[1]-1)
+            temp_obstacles = self.obstacles + [new_obstacle]
+            # Place the new obstacle and THEN start moving!!!!!!!
+            # Don't start moving from the location of the obstacle.
+            self.move_from_test_location(self.start_point, self.starting_direction, temp_obstacles)
 
-d6 = day6('./data/day6_2024.txt')
-print(f"day 6, part 1:  {d6.solution1}")
-# print(f"day 5, part 1:  {d5.solution2}")
