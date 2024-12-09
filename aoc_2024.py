@@ -490,3 +490,72 @@ class day6:
             # Don't start moving from the location of the obstacle.
             self.move_from_test_location(self.start_point, self.starting_direction, temp_obstacles)
 
+class day7:
+    def __init__(self, filename):
+        self.data = aa.read_file(filename)
+        self.solution1 = self.part1()
+        self.solution2 = self.part2()
+
+    def parse_input(self, line):
+        target_value = int(line.split(':')[0])
+        numbers = line.split(':')[1].split(' ')[1:]
+        numbers = [int(x) for x in numbers]
+        return numbers, target_value
+
+
+    def part1(self):
+        total = 0
+        for line in self.data:
+            self.nums, self.target = self.parse_input(line)
+            total = total + self.brute_force()
+        return total
+
+    def part2(self):
+        total = 0
+        for line in self.data:
+            self.nums, self.target = self.parse_input(line)
+            total = total + self.brute_force(concat = True)
+        return total
+            
+    def brute_force(self, concat:bool = False):
+        temp_nums = self.nums.copy()
+        equations = [(self.nums[0], self.nums[1:])]
+        while len(equations) > 0:
+            cur_equation = equations.pop()
+            cur_sol = cur_equation[0]
+            nums = cur_equation[1]
+
+            added = cur_sol + nums[0]
+            mult = cur_sol * nums[0]
+            if concat:
+                concated = int(str(cur_sol)+str(nums[0]))
+
+            # if this is that last number in the list of numbers
+            if len(nums) == 1:
+                if (added == self.target or mult == self.target):
+                    return self.target
+                elif concat:
+                    if concated == self.target:
+                        return self.target
+                else:
+                    continue
+                    
+            #if we still have numbers to go
+            #if added is still less than the target
+            if len(nums) > 1:
+                if added <= self.target:
+                    equations.append((added, nums[1:]))
+                if mult <= self.target:
+                    equations.append((mult, nums[1:]))
+                if concat:
+                    if concated <= self.target:
+                        equations.append((concated, nums[1:]))
+                
+        return 0
+ 
+        
+    
+
+                    
+                    
+    
