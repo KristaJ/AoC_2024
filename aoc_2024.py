@@ -557,10 +557,12 @@ class day8:
     def __init__(self, filename):
         self.data = aa.read_file(filename)
         self.data_matrix = self.data_to_matrix() 
+        self.y_dim, self.x_dim = self.data_matrix.shape
         self.anti_node_matrix = np.full(self.data_matrix.shape, '.')
         self.unique_antenna = self.get_unique_antenna()
         self.antenna_map = self.map_antennas()
         self.solution1 = self.part1()
+        self.solution2 = self.part2()
 
     def data_to_matrix(self):
         data = [[x for x in data_line] for data_line in self.data]
@@ -608,7 +610,45 @@ class day8:
         # print(self.anti_node_matrix)
         return np.count_nonzero(self.anti_node_matrix == "X")
  
-                
+    def part2(self):
+        '''
+        0.  Identify all pairs of matching nodes
+        1.  find the delta x and delta y between the pair
+        2.  place an anti node at an additional delta x and delta y each node
+        3.  Keep placing antinodes until either the new x or new y is out of range
+        '''
+        for k, v in self.antenna_map.items():
+            nn = 0
+            pairs = list(itertools.combinations(v, 2))
+            for p in pairs:
+                dy = p[0][0]-p[1][0]
+                dx = p[0][1]-p[1][1]
+                new_y1 = p[1][0]
+                new_x1 = p[1][1]
+                new_antinodes1 = []
+                while (new_y1 < self.y_dim and
+                       new_y1 > -1 and
+                       new_x1 < self.x_dim and
+                       new_x1 > -1):
+                    new_antinodes1.append((new_y1, new_x1))
+                    new_y1 = new_y1 - dy
+                    new_x1 = new_x1 - dx
+                new_y2 = p[1][0]
+                new_x2 = p[1][1]
+                new_antinodes2 = []
+                while (new_y2 < self.y_dim and
+                       new_y2 > -1 and
+                       new_x2 < self.x_dim and
+                       new_x2 > -1):
+                    new_antinodes2.append((new_y2, new_x2))
+                    new_y2 = new_y2 + dy
+                    new_x2 = new_x2 + dx
+
+                for node in new_antinodes1 + new_antinodes2:
+                    self.anti_node_matrix[node[0], node[1]] = "X"
+
+        # print(self.anti_node_matrix)
+        return np.count_nonzero(self.anti_node_matrix == "X")                
         
                     
                     
