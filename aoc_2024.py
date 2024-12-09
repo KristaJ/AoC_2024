@@ -9,7 +9,6 @@ import math
 class day1:
 
     def __init__(self, filename):
-        self.data = aa.read_file(filename)
         self.solution1 = self.day1_a
         self.solution2 = self.day1_b
 
