@@ -4,6 +4,7 @@ import re
 import numpy as np
 from collections import defaultdict
 import math
+import itertools
 
 
 class day1:
@@ -552,9 +553,63 @@ class day7:
                 
         return 0
  
-        
-    
+class day8:
+    def __init__(self, filename):
+        self.data = aa.read_file(filename)
+        self.data_matrix = self.data_to_matrix() 
+        self.anti_node_matrix = np.full(self.data_matrix.shape, '.')
+        self.unique_antenna = self.get_unique_antenna()
+        self.antenna_map = self.map_antennas()
+        self.solution1 = self.part1()
 
+    def data_to_matrix(self):
+        data = [[x for x in data_line] for data_line in self.data]
+        matrix = np.array(data)
+        return matrix
+
+    def get_unique_antenna(self):
+        return [x for x in np.unique(self.data_matrix) if x != '.']
+
+    def map_antennas(self):
+        ant_map = {}
+        for a in self.unique_antenna:
+            ant_map[a] = list(zip(np.where(self.data_matrix == a)[0],
+                                  np.where(self.data_matrix == a)[1]))
+        return ant_map
+
+    def part1(self):
+        '''
+        0.  Identify all pairs of matching nodes
+        1.  find the delta x and delta y between the pair
+        2.  place an anti node at an additiona delta x and delta y each node
+        '''
+        for k, v in self.antenna_map.items():
+            nn = 0
+            pairs = list(itertools.combinations(v, 2))
+            for p in pairs:
+                dy = p[0][0]-p[1][0]
+                dx = p[0][1]-p[1][1]
+                new_antinode1 = ((p[1][0] - dy), (p[1][1] - dx))
+                new_antinode2 = ((p[0][0] + dy), (p[0][1] + dx))
+                if (new_antinode1[0] > -1) and (new_antinode1[1] > -1):
+                    try:
+                        self.anti_node_matrix[new_antinode1[0], new_antinode1[1]] = "X"
+                        # print(f'{new_antinode1} = {nn}')
+                        # nn = nn+1
+                    except IndexError:
+                        pass
+                if (new_antinode2[0] > -1) and (new_antinode2[1] > -1):
+                    try:
+                        self.anti_node_matrix[new_antinode2[0], new_antinode2[1]] = "X"
+                        # print(f'{new_antinode2} = {nn}')
+                        # nn = nn+1
+                    except IndexError:
+                        pass
+        # print(self.anti_node_matrix)
+        return np.count_nonzero(self.anti_node_matrix == "X")
+ 
+                
+        
                     
                     
     
