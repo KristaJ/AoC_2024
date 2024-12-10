@@ -649,6 +649,19 @@ class day8:
 
         # print(self.anti_node_matrix)
         return np.count_nonzero(self.anti_node_matrix == "X")                
+
+
+class day9:
+
+    def __init__(self, filename):
+        self.data = aa.read_file(filename)
+        self.parse_input()
+
+    def parse_input(self):
+        filesizes = self.data[::2]
+        freespace = self.data[1:2]
+        ids = [i for i in range(filesizes)]
+        print(filesizes, freespace, ids)
         
                     
                     
