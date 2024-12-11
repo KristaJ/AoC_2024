@@ -7,7 +7,9 @@ class day10:
         self.data = aa.read_matrix(filename)
         self.data = self.data.astype(int)
         self.starting_points = self.find_starting_points()
-        self.solution1 = self.find_paths()
+        self.paths= self.find_paths()
+        self.solution1 = self.part1()
+        self.solution2 = len(self.paths)
 
 
     def find_starting_points(self):
@@ -48,12 +50,16 @@ class day10:
             current_point = path[-1]
             current_elevation = self.data[current_point]
             if current_elevation == 9:
-                complete_paths.append((path[0], path[-1]))
+                complete_paths.append(path)
             else:
                 moves = self.check_all_directions(current_point, current_elevation)
                 for move in moves:
                     paths.append(path + [move])
-        return len(list(set(complete_paths)))
+        return complete_paths
+    
+    def part1(self):
+        start_end = [(x[0], x[-1]) for x in self.paths]
+        return len(list(set(start_end)))
 
                 
             
