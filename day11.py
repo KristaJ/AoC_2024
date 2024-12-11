@@ -4,7 +4,7 @@ class day11:
 
     def __init__(self, filename):
         self.data = [int(x) for x in aa.read_file(filename)[0].split(" ")]
-        self.part1()
+        self.solution1 = self.part1(25)
 
     def blink(self, input_data):
         temp_data = input_data.copy()
@@ -23,8 +23,10 @@ class day11:
                 temp_data[current_stone_index_temp ] = stone*2024 
         return temp_data
 
-    def part1(self):
+    def part1(self, blink):
         input_data = self.data
-        for i in range(25):
+        for i in range(blinks):
+            print(i)
             input_data = self.blink(input_data)
-            print(f'blink {i+1} - {len(input_data)}')
+        print(f'blink {i+1} - {len(input_data)}')
+        return len(input_data)
