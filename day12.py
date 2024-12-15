@@ -2,12 +2,14 @@ from Assets import AoCAssets as ac
 import numpy as np
 import networkx as nx
 import pandas as pd
+from collections import Counter
 
 class day12:
     def __init__(self, filename):
         self.data = ac.read_matrix(filename)
         self.plots = self.find_plots()
-        self.solution1 = self.part1()
+        self.solution1, self.all_edges = self.part1()
+        self.solution2 = self.part2()
         
 
 
@@ -26,7 +28,7 @@ class day12:
                     crop_frame = [[loc, a, crop] for a in adjacent]
                 edges = pd.concat([pd.DataFrame(crop_frame, columns = ['target', 'source', 'crop']),
                                   edges], ignore_index=True)
-        G = nx.from_pandas_edgelist(edges)
+        G = nx.from_pandas_edgelist(edges, edge_attr = True)
         plots = [G.subgraph(x) for x in nx.connected_components(G)]
         return plots
 
@@ -56,7 +58,9 @@ class day12:
 
     def part1(self):
         total = 0
+        all_edges = []
         for plot in self.plots:
+            crop = next(iter(plot.edges(data=True)))[2].get('crop')
             pts = plot.nodes()
             edges = []
             for p in sorted(pts):
@@ -67,5 +71,120 @@ class day12:
                 edges.extend([x for x in moves if x not in pts])
             plot_cost = len(pts) * len(edges)
             total = total + plot_cost
-        return total
+
+            all_edges.append((crop, edges, len(pts)))
+        return total, all_edges
+
+    def part2(self):
+        total = 0
+        for plot in self.plots:
+            right_edges = []
+            left_edges = []
+            top_edges = []
+            bottom_edges = []
+            edges = [right_edges, left_edges, top_edges, bottom_edges]
+            crop = next(iter(plot.edges(data=True)))[2].get('crop')
+            pts = plot.nodes()
+            for p in pts:
+                moves = [(p[0], p[1]+1),  #right
+                         (p[0], p[1]-1),  #left
+                         (p[0]+1, p[1]),  #up
+                         (p[0]-1, p[1])]  #down
+                for i in range(4):
+                    if self.get_crop(moves[i]) != crop:
+                        edges[i].append(p)
             
+            num_sides_total = 0
+            ys = list(set([x[1] for x in right_edges]))
+            for y in ys:
+                e = sorted([x[0] for x in right_edges if x[1] == y])
+                num_sides = self.is_consec(e)
+                num_sides_total += num_sides
+            ys = list(set([x[1] for x in left_edges]))
+            for y in ys:
+                e = sorted([x[0] for x in left_edges if x[1] == y])
+                num_sides = self.is_consec(e)
+                num_sides_total += num_sides
+            ys = list(set([x[0] for x in top_edges]))
+            for y in ys:
+                e = sorted([x[1] for x in top_edges if x[0] == y])
+                num_sides = self.is_consec(e)
+                num_sides_total += num_sides
+            ys = list(set([x[0] for x in bottom_edges]))
+            for y in ys:
+                e = sorted([x[1] for x in bottom_edges if x[0] == y])
+                num_sides = self.is_consec(e)
+                num_sides_total += num_sides
+            total += (num_sides_total * len(pts))
+        return (total)
+        
+                
+    def is_consec(self, points):
+        num_consec = 1
+        p0 = points.pop()
+        while points:
+            p1 = points.pop()
+            if p0 == p1+1:
+                pass
+            else:
+                num_consec = num_consec+1
+            p0 = p1
+        return num_consec
+                
+
+    def get_crop(self, point):
+        try:
+            return self.data[point]
+        except IndexError:
+            return " "
+        
+    def find_all_corners(self):
+        corners = []
+        for i in range(-1, self.data.shape[0]):
+            for j in range(-1, self.data.shape[1]):
+                if self.is_corner(i, j):
+                    corners.append(((i,j), (i+1, j), (i, j+1), (i+1, j+1)))
+        return corners
+
+
+    # def is_corner(self, i, j):
+    #     points = [(i,j), (i+1, j), (i, j+1), (i+1, j+1)]
+        
+    #     crops = [self.get_crop(x) for x in points]
+    #     crops = [x for x in crops if x is not None]
+        
+    #     if len(crops) == 1:
+    #         return True
+    #     if len(crops) == 2: # grid side case - a corner if crops are different
+    #         if len(list(set(crops))) == 2:
+    #             return True
+    #         else:
+    #             return False
+        
+    #     # diagonal corner case
+        
+    #     crop_counter = Counter(crops)
+    #     if i == 2 and j==2:
+    #         print(sorted(list(crop_counter.values())))
+    #     if ((sorted(list(crop_counter.values())) == [1, 3]) or
+    #         (sorted(list(crop_counter.values())) == [1, 1, 2]) or
+    #         (sorted(list(crop_counter.values())) == [1, 1, 1, 1])):
+    #         return True
+    #     elif (sorted(list(crop_counter.values())) == [2, 2] 
+    #           and (crops[0] == crops[3]) 
+    #           and (crops[1] == crops[2])):
+    #         return True
+    #     else:
+    #         return False
+
+    # def get_crop(self, point):
+    #     if (point[0] < 0) or (point[1]<0):
+    #         return None
+    #     try:
+    #         return self.data[point]
+    #     except IndexError:
+    #         return None
+
+                     
+
+
