@@ -138,52 +138,15 @@ class day12:
         except IndexError:
             return " "
         
-    def find_all_corners(self):
-        corners = []
-        for i in range(-1, self.data.shape[0]):
-            for j in range(-1, self.data.shape[1]):
-                if self.is_corner(i, j):
-                    corners.append(((i,j), (i+1, j), (i, j+1), (i+1, j+1)))
-        return corners
+   
 
-
-    # def is_corner(self, i, j):
-    #     points = [(i,j), (i+1, j), (i, j+1), (i+1, j+1)]
-        
-    #     crops = [self.get_crop(x) for x in points]
-    #     crops = [x for x in crops if x is not None]
-        
-    #     if len(crops) == 1:
-    #         return True
-    #     if len(crops) == 2: # grid side case - a corner if crops are different
-    #         if len(list(set(crops))) == 2:
-    #             return True
-    #         else:
-    #             return False
-        
-    #     # diagonal corner case
-        
-    #     crop_counter = Counter(crops)
-    #     if i == 2 and j==2:
-    #         print(sorted(list(crop_counter.values())))
-    #     if ((sorted(list(crop_counter.values())) == [1, 3]) or
-    #         (sorted(list(crop_counter.values())) == [1, 1, 2]) or
-    #         (sorted(list(crop_counter.values())) == [1, 1, 1, 1])):
-    #         return True
-    #     elif (sorted(list(crop_counter.values())) == [2, 2] 
-    #           and (crops[0] == crops[3]) 
-    #           and (crops[1] == crops[2])):
-    #         return True
-    #     else:
-    #         return False
-
-    # def get_crop(self, point):
-    #     if (point[0] < 0) or (point[1]<0):
-    #         return None
-    #     try:
-    #         return self.data[point]
-    #     except IndexError:
-    #         return None
+    def get_crop(self, point):
+        if (point[0] < 0) or (point[1]<0):
+            return None
+        try:
+            return self.data[point]
+        except IndexError:
+            return None
 
                      
 
