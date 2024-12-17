@@ -7,6 +7,7 @@ class day13:
         self.data = ac.read_file(filename)
         self.game_data = self.parse_data()
         self.solution1 = self.part1()
+        self.solution2 = self.part2()
 
     def parse_data(self):
         game = {}
@@ -42,5 +43,18 @@ class day13:
             b = (v['Yfinal'] - v['Ymovea']*a)/v['Ymoveb']
             if (round(a, 3)%1 == 0) and (round(b, 3)%1 == 0):
                 total = total + (a*3) + b
-        print(total)
+        return int(total)
+
+    def part2(self):
+        total = 0
+        for k, v in self.game_data.items():
+            Xfinal = v['Xfinal'] + 10000000000000
+            Yfinal = v['Yfinal'] + 10000000000000
+            z = Xfinal/v['Xmovea']
+            c = z - ((v['Xmoveb'] * (Yfinal/v['Ymoveb']))/v['Xmovea'])
+            d = v['Xmoveb']/(v['Ymoveb'] * v['Xmovea'])
+            a = c/(1-(v['Ymovea'] * d))
+            b = (Yfinal - v['Ymovea']*a)/v['Ymoveb']
+            if (round(a, 3)%1 == 0) and (round(b, 3)%1 == 0):
+                total = total + (a*3) + b
         return int(total)
