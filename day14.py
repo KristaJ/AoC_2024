@@ -1,8 +1,6 @@
 from Assets import AoCAssets as ac
 import numpy as np
 import math
-from PIL import Image
-import imageio
 import matplotlib.pyplot as plt
 
 
@@ -16,7 +14,7 @@ class day14:
         self.final_positions = self.move_robots()
         self.quads = self.get_quads()
         self.solution1 = self.part1()
-        self.find_line()
+        self.solution2 = self.find_line()
         # self.plot_robots()
 
     def parse_data(self):
@@ -76,26 +74,26 @@ class day14:
 
     def find_line(self):
         potential = []
-        for i in range(4000, 7000):
-            if i%100 == 0:
+        for i in range(0, 10000):
+            if i%1000 == 0:
                 print(f'elapsed time: {i}')
             pos = self.move_robots(i)
-            vert_vals = list(set([x[0] for x in pos if x[0] > 50]))
+            vert_vals = list(set([x[0] for x in pos]))
             # if we are looking for the verrtical bottom of the tree 
-            # it's probably more than half way down
             for y in vert_vals:
                 consec = 0
-                pts = sorted([x for x in pos if x[0] == y])
-                pt = pts.pop()
-                while pts:
-                    if pt[1] == pts[-1][1]+1:
-                        consec = consec +1
-                    else:
-                        consec = 0
+                pts = sorted(list(set([x for x in pos if x[0] == y])))
+                if len(pts)>5:
                     pt = pts.pop()
-                if consec > 5:
-                    print(f"====={i}=====")
-                    print(sorted([x for x in pos if x[0] == y]))
+                    while pts:
+                        if pt[1] == pts[-1][1]+1:
+                            consec = consec +1
+                        else:
+                            consec = 0
+                        pt = pts.pop()
+                        if consec > 5:
+                            potential.append(i)
+        return list(set(potential))
                     
                 
         
